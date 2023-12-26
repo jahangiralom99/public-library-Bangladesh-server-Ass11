@@ -33,31 +33,38 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     //   user Collections
-      const categoriesCollection = client.db("libraryBd").collection("category");
       const allBooksCollection = client.db("libraryBd").collection("allBooks");
+      const borrowedDateCollection = client.db("libraryBd").collection("borrowedDate");
       
       await client.connect();
-
-    // categories get 
-      app.get("/api/v1/categories", async (req, res) => {
-          const result = await categoriesCollection.find().toArray();
-          res.send(result);
-      })
-
-      // categories get for id 
-      app.get("/api/v1/categories/:id", async (req, res) => {
-          const id = req.params.id;
-          const query = { _id: new ObjectId(id) };
-          const result = await categoriesCollection.findOne(query);
-          res.send(result);
-      });
 
       // crate books or Add Books
       app.post("/api/v1/create-books", async (req, res) => {
           const myBooks = req.body;
           const result = await allBooksCollection.insertOne(myBooks);
           res.send(result);
+      });
+
+    //   get ALl app and Filter bt Query and email and pagination 
+      app.get("/api/v1/all-books", async (req, res) => {
+          //   query by category
+          const category = req.query.category;
+          let queryObj = {};
+          if (category) {
+              queryObj.category = category;
+          }
+          const result = await allBooksCollection.find(queryObj).toArray();
+          res.send(result);
       })
+    
+    
+      // categories get for id 
+      app.get("/api/v1/all-books/:id", async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await allBooksCollection.findOne(query);
+        res.send(result);
+    });
  
 
     await client.db("admin").command({ ping: 1 });
