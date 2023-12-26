@@ -4,6 +4,8 @@ const port = process.env.PORT || 3000;
 const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const cors = require("cors");
+var jwt = require('jsonwebtoken');
+
 
 // middleware
 app.use(cors({
@@ -34,9 +36,14 @@ async function run() {
   try {
     //   user Collections
       const allBooksCollection = client.db("libraryBd").collection("allBooks");
-      const borrowedDateCollection = client.db("libraryBd").collection("borrowedDate");
+      const borrowedBookCollection = client.db("libraryBd").collection("borrowedBook");
       
-      await client.connect();
+    await client.connect();
+    
+    // jwt token Create :
+    app.post("/api/v1/create-jwt-token", async (req, res) => {
+      
+    })
 
       // crate books or Add Books
       app.post("/api/v1/create-books", async (req, res) => {
@@ -57,15 +64,32 @@ async function run() {
           res.send(result);
       })
     
-    
       // categories get for id 
       app.get("/api/v1/all-books/:id", async (req, res) => {
         const id = req.params.id;
         const query = { _id: new ObjectId(id) };
         const result = await allBooksCollection.findOne(query);
         res.send(result);
-    });
- 
+      });
+    
+    //  create borrowed Date collection
+    app.post("/api/v1/create-borrowed-books", async (req, res) => {
+      const myBorrowedBooks = req.body;
+      const result = await borrowedBookCollection.insertOne(myBorrowedBooks);
+      res.send(result);
+    })
+
+    // get by query email 
+    app.get("/api/v1/borrowed-books", async (req, res) => {
+      // query bt email
+      const userEmail = req.query.email;
+      let query = {};
+      if (userEmail) {
+        query.email = userEmail;
+      }
+      const result = await borrowedBookCollection.find(query).toArray();
+      res.send(result);
+    })
 
     await client.db("admin").command({ ping: 1 });
     console.log(
