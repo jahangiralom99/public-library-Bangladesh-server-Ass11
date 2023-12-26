@@ -42,8 +42,35 @@ async function run() {
     
     // jwt token Create :
     app.post("/api/v1/create-jwt-token", async (req, res) => {
-      
-    })
+      const user = req.body;
+      const token = jwt.sign(user, process.env.SECRET_TOKEN, { expiresIn: "1h" });
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "none"
+      })
+        .send({ message: true });
+    });
+
+    //My cookies middleware & verify Token 
+    const getMan = async (req, res, next) => {
+      const token = req.cookies.token;
+
+      // if Client does not send token
+      if (!token) {
+        return res.status(401).send({ message: "UnAuthorized" });
+      };
+
+      // verify token
+      jwt.verify(token, process.env.SECRET_TOKEN, (err, decoded) => {
+        if (err) {
+          return res.status(401).send({ message: "UnAuthorized" });
+        };
+        res.user = decoded;
+        next();
+      })
+    }
+    
 
       // crate books or Add Books
       app.post("/api/v1/create-books", async (req, res) => {
@@ -80,9 +107,10 @@ async function run() {
     })
 
     // get by query email 
-    app.get("/api/v1/borrowed-books", async (req, res) => {
+    app.get("/api/v1/borrowed-books",getMan, async (req, res) => {
       // query bt email
       const userEmail = req.query.email;
+      const cookeisEmail = req.pa
       let query = {};
       if (userEmail) {
         query.email = userEmail;
