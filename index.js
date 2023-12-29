@@ -10,7 +10,7 @@ var jwt = require("jsonwebtoken");
 // middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["https://public-library-bd.netlify.app"],
     credentials: true,
   })
 );
@@ -50,8 +50,8 @@ async function run() {
       res
         .cookie("token", token, {
           httpOnly: true,
-          secure: false,
-          // sameSite: "none"
+          secure: true,
+          sameSite: "none"
         })
         .send({ message: true });
     });
