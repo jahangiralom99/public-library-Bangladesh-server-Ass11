@@ -8,6 +8,8 @@ const cors = require("cors");
 var jwt = require("jsonwebtoken");
 
 // middleware
+// http://localhost:5175
+// https://public-library-bd.netlify.app
 app.use(
   cors({
     origin: ["https://public-library-bd.netlify.app"],
@@ -102,11 +104,14 @@ async function run() {
         sortObj[sortField] = sortOrder;
       }
 
-      const result = await allBooksCollection.find(queryObj).sort(sortObj).toArray();
+      const result = await allBooksCollection
+        .find(queryObj)
+        .sort(sortObj)
+        .toArray();
       res.send(result);
     });
 
-    // update Books for id 
+    // update Books for id
     app.patch("/api/v1/update-books/:id", async (req, res) => {
       const id = req.params.id;
       const myBook = req.body;
@@ -120,11 +125,11 @@ async function run() {
           author_name: myBook.author_name,
           category: myBook.category,
           short_description: myBook.short_description,
-        }
+        },
       };
       const result = await allBooksCollection.updateOne(filter, updateBook);
       res.send(result);
-    })
+    });
 
     // categories get for id
     app.get("/api/v1/all-books/:id", async (req, res) => {
@@ -143,11 +148,15 @@ async function run() {
       const setQuantity = {
         $set: {
           quantity: update.quantity,
-        }
+        },
       };
-      const result = await allBooksCollection.updateOne(filter, setQuantity, option);
+      const result = await allBooksCollection.updateOne(
+        filter,
+        setQuantity,
+        option
+      );
       res.send(result);
-    })
+    });
 
     //  create borrowed Date collection
     app.post("/api/v1/create-borrowed-books", async (req, res) => {
@@ -182,8 +191,7 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await borrowedBookCollection.deleteOne(query);
       res.send(result);
-    })
-
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
